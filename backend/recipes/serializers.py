@@ -1,7 +1,12 @@
 from rest_framework import serializers
-from core.models import Recipe, RecipeIngredient
+from core.models import Recipe, Ingredient, RecipeIngredient
 from users.serializers import UserSerializer
 from core.serializers import Base64ImageField
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='ingredient.id')
