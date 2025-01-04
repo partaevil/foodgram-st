@@ -2,3 +2,7 @@
 
 По адресу http://localhost изучите фронтенд веб-приложения, а по адресу http://localhost/api/docs/ — спецификацию API.
 
+> [!CAUTION]
+> В случае чего в браузере пропишите после поулчения токена
+> localStorage.setItem('token', '_token_');
+> Чтобы войти
