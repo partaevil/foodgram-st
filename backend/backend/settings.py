@@ -27,6 +27,21 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "http://127.0.0.1",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Application definition
 
@@ -39,8 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
     'core',
-    'users'
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +67,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'

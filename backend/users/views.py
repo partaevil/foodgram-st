@@ -1,4 +1,3 @@
-# users/views.py
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -6,6 +5,10 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import get_user_model
 from .serializers import (UserSerializer, UserCreateSerializer,
                          PasswordChangeSerializer, AvatarSerializer)
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
 
 User = get_user_model()
 
@@ -60,11 +63,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
-from django.contrib.auth import authenticate
-
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
@@ -73,6 +71,8 @@ class CustomAuthToken(ObtainAuthToken):
         if not email or not password:
             return Response({'error': 'Email and password are required.'}, status=400)
 
+        # ATTENTION: if no user will have request email django will return error django.contrib.auth.models.User.DoesNotExist
+        # TODO: add check 
         user = authenticate(request, username=User.objects.get(email=email).username, password=password)
         
         if user is None:
