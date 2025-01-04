@@ -80,7 +80,7 @@ class CustomAuthToken(ObtainAuthToken):
 
         token, created = Token.objects.get_or_create(user=user)
         return Response({
-            'token': token.key,
+            'auth_token': token.key,
             'user_id': user.id,
             'email': user.email,
         })
