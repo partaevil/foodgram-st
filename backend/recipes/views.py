@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from core.models import Recipe, Ingredient
 from .serializers import RecipeSerializer, IngredientSerializer
 from django.shortcuts import get_object_or_404
@@ -10,6 +10,7 @@ import hashlib
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    permission_classes = [AllowAny]
     pagination_class = None  
 
     def get_queryset(self):
