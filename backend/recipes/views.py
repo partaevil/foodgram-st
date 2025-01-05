@@ -3,7 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from core.models import Recipe, Ingredient, ShoppingCart, Favorite, RecipeIngredient
-from .serializers import RecipeSerializer, IngredientSerializer, RecipeShortSerializer
+from .serializers import RecipeSerializer, IngredientSerializer
+from core.serializers import RecipeShortSerializer
 from django.shortcuts import get_object_or_404
 import hashlib
 import csv

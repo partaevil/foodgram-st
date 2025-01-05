@@ -70,9 +70,3 @@ class RecipeSerializer(serializers.ModelSerializer):
             
         return super().update(instance, validated_data)
 
-class RecipeShortSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
-    
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
