@@ -17,7 +17,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        queryset = Ingredient.objects.all()
+        queryset = Ingredient.objects.all().order_by('name')
         name = self.request.query_params.get('name', None)
         if name:
             # Case-insensitive search by ingredient name
@@ -30,7 +30,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        queryset = Recipe.objects.all()
+        queryset = Recipe.objects.all().order_by('id')
         params = self.request.query_params
 
         if self.request.user.is_authenticated:
