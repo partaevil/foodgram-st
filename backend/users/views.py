@@ -125,12 +125,20 @@ class CustomAuthToken(ObtainAuthToken):
         if not email or not password:
             return Response({'error': 'Email and password are required.'}, status=400)
 
-        # ATTENTION: if no user will have request email django will return error django.contrib.auth.models.User.DoesNotExist
-        # TODO: add check 
-        user = authenticate(request, username=User.objects.get(email=email).username, password=password)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'No user found with this email address'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = authenticate(request, username=user.username, password=password)
         
         if user is None:
-            return Response({'error': 'Invalid credentials'}, status=400)
+            return Response(
+                {'error': 'Invalid credentials'}, 
+                status=status.HTTP_400_BAD_REQUEST)
 
         token, created = Token.objects.get_or_create(user=user)
         return Response({
