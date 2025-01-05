@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import get_user_model
-from core.models import Subscription
+from core.models import Subscription, UserProfile
 from .serializers import (UserSerializer, UserCreateSerializer,
                          PasswordChangeSerializer, AvatarSerializer,
                          SubscriptionSerializer)
@@ -49,17 +49,23 @@ class UserViewSet(viewsets.ModelViewSet):
                           status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['put', 'delete'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False, 
+        methods=['put', 'delete'], 
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='me/avatar'
+    )
     def avatar(self, request):
-        if request.method == 'DELETE':
-            if hasattr(request.user, 'profile'):
-                request.user.profile.avatar.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        user = request.user
+        profile, created = UserProfile.objects.get_or_create(user=user)
 
-        serializer = AvatarSerializer(request.user.profile,
-                                    data=request.data,
-                                    partial=True)
+        if request.method == 'DELETE':
+            if profile.avatar:
+                profile.avatar.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({'error': 'No avatar to delete'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AvatarSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
