@@ -119,6 +119,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
+        if 'logout' in request.path:
+            if request.user.is_authenticated:
+                request.user.auth_token.delete()
+                return Response({'status': 'Logged out successfully'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'error': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        
         email = request.data.get('email')
         password = request.data.get('password')
 
@@ -134,11 +140,12 @@ class CustomAuthToken(ObtainAuthToken):
             )
 
         user = authenticate(request, username=user.username, password=password)
-        
+
         if user is None:
             return Response(
-                {'error': 'Invalid credentials'}, 
-                status=status.HTTP_400_BAD_REQUEST)
+                {'error': 'Invalid credentials'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         token, created = Token.objects.get_or_create(user=user)
         return Response({
@@ -146,3 +153,5 @@ class CustomAuthToken(ObtainAuthToken):
             'user_id': user.id,
             'email': user.email,
         })
+
+    
