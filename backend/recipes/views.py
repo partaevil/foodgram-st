@@ -29,6 +29,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        params = self.request.query_params
+
+        if self.request.user.is_authenticated:
+            # Filter by shopping cart
+            is_in_shopping_cart = params.get('is_in_shopping_cart')
+            if is_in_shopping_cart is not None:
+                if is_in_shopping_cart == '1':
+                    queryset = queryset.filter(in_carts_of__user=self.request.user)
+                elif is_in_shopping_cart == '0':
+                    queryset = queryset.exclude(in_carts_of__user=self.request.user)
+
+            # Filter by favorites
+            is_favorited = params.get('is_favorited')
+            if is_favorited is not None:
+                if is_favorited == '1':
+                    queryset = queryset.filter(favorited_by__user=self.request.user)
+                elif is_favorited == '0':
+                    queryset = queryset.exclude(favorited_by__user=self.request.user)
+
+        return queryset.distinct()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.method in ['POST', 'PATCH']:
+            context['ingredients'] = self.request.data.get('ingredients', [])
+        return context
+    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if self.request.method in ['POST', 'PATCH']:
