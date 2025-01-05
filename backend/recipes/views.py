@@ -15,6 +15,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny]
+    pagination_class = None 
 
     def get_queryset(self):
         queryset = Ingredient.objects.all().order_by('name')
