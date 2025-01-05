@@ -1,4 +1,6 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
+from import_export.resources import ModelResource
 from .models import (
     UserProfile, Ingredient, Recipe, RecipeIngredient,
     Favorite, ShoppingCart, Subscription
@@ -7,12 +9,20 @@ from .models import (
 # Register UserProfile
 admin.site.register(UserProfile)
 
-# Customize and register Ingredient
-class IngredientAdmin(admin.ModelAdmin):
+class IngredientResource(ModelResource):
+    class Meta:
+        model = Ingredient
+        exclude = ('id',)
+        skip_first_row = True
+        encoding = 'utf-8-sig'
+        import_mode = 1  # Create new entries only
+        import_id_fields = []
+
+@admin.register(Ingredient)
+class IngredientAdmin(ImportExportModelAdmin):
+    resource_class = IngredientResource
     list_display = ('name', 'measurement_unit')
     search_fields = ('name', 'measurement_unit')
-
-admin.site.register(Ingredient, IngredientAdmin)
 
 # Customize and register Recipe
 class RecipeAdmin(admin.ModelAdmin):
