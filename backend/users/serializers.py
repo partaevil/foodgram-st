@@ -4,6 +4,7 @@ from core.models import UserProfile, Subscription
 from core.serializers import Base64ImageField, RecipeShortSerializer
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -47,7 +48,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         """Ensure the email is unique."""
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
-                'A user with this email already exists.')
+                _('A user with this email already exists.'))
         return value
 
     def validate_password(self, value):

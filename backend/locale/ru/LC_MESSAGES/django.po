@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-06 13:30+0300\n"
+"POT-Creation-Date: 2025-01-06 19:50+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,113 +20,129 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: backend/settings.py:181
+#: backend/settings.py:180
 msgid "English"
 msgstr ""
 
-#: backend/settings.py:182
+#: backend/settings.py:181
 msgid "Russian"
 msgstr ""
 
-#: core/admin.py:50
+#: core/admin.py:55
 msgid "Added to favorites"
 msgstr "Добавлено в избранное"
 
-#: core/models.py:14 core/models.py:108 core/models.py:130 core/models.py:152
+#: core/models.py:15 core/models.py:122 core/models.py:145 core/models.py:168
 msgid "User"
 msgstr "Пользователь"
 
-#: core/models.py:20
+#: core/models.py:21
 msgid "Avatar"
 msgstr "Аватар"
 
-#: core/models.py:24
+#: core/models.py:25
 msgid "User Profile"
 msgstr "Профиль пользователя"
 
-#: core/models.py:25
+#: core/models.py:26
 msgid "User Profiles"
 msgstr "Профили пользователей"
 
-#: core/models.py:33 core/models.py:56
+#: core/models.py:35 core/models.py:59
 msgid "Name"
 msgstr "Имя"
 
-#: core/models.py:37
+#: core/models.py:39
 msgid "Measurement Unit"
 msgstr "Измерительный юнит"
 
-#: core/models.py:41 core/models.py:88
+#: core/models.py:43 core/models.py:96
 msgid "Ingredient"
 msgstr "Ингридиент"
 
-#: core/models.py:42
+#: core/models.py:44
 msgid "Ingredients"
 msgstr "Ингридиенты"
 
-#: core/models.py:52 core/models.py:158
+#: core/models.py:55 core/models.py:174
 msgid "Author"
 msgstr "Автор"
 
-#: core/models.py:60
+#: core/models.py:63
 msgid "Image"
 msgstr "Изображение"
 
-#: core/models.py:63
+#: core/models.py:66
 msgid "Description"
 msgstr "Описание"
 
-#: core/models.py:67
+#: core/models.py:70
 msgid "Cooking Time (minutes)"
 msgstr "Время приготовления (минуты)"
 
-#: core/models.py:71 core/models.py:82 core/models.py:114 core/models.py:136
+#: core/models.py:74
+msgid "Date Published"
+msgstr "Дата публикации"
+
+#: core/models.py:78 core/models.py:90 core/models.py:128 core/models.py:151
 msgid "Recipe"
 msgstr "Рецепт"
 
-#: core/models.py:72
+#: core/models.py:79
 msgid "Recipes"
 msgstr "Рецепты"
 
-#: core/models.py:92
+#: core/models.py:100
 msgid "Amount"
 msgstr "Количество"
 
-#: core/models.py:97
+#: core/models.py:105
 msgid "Recipe Ingredient"
 msgstr "Ингридиент для рецепта"
 
-#: core/models.py:98
+#: core/models.py:106
 msgid "Recipe Ingredients"
 msgstr "Ингридиенты для рецептов"
 
-#: core/models.py:119
+#: core/models.py:133
 msgid "Favorite"
 msgstr "Избранное"
 
-#: core/models.py:120
+#: core/models.py:134
 msgid "Favorites"
 msgstr "Избранные"
 
-#: core/models.py:141
+#: core/models.py:156
 msgid "Shopping Cart"
 msgstr "Корзина"
 
-#: core/models.py:142
+#: core/models.py:157
 msgid "Shopping Carts"
 msgstr "Корзины"
 
-#: core/models.py:162
+#: core/models.py:178
 msgid "Number of Recipes"
 msgstr "Количество рецептов"
 
-#: core/models.py:167
+#: core/models.py:183
 msgid "Subscription"
 msgstr "Подписка"
 
-#: core/models.py:168
+#: core/models.py:184
 msgid "Subscriptions"
 msgstr "Подписки"
+
+#: users/serializers.py:51
+msgid "A user with this email already exists."
+msgstr "Пользователь с такой почтой существует."
+
+#: users/views.py:170
+msgid "Email and password are required."
+msgstr "Почта и пароль необходимы"
+
+#: users/views.py:178
+msgid "No user found with this email address"
+msgstr "Пользователь не найден с такой почтой"
 
 #~ msgid "Page not found."
 #~ msgstr "Страница не найдена."

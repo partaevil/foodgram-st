@@ -10,6 +10,7 @@ from .serializers import (UserSerializer, UserCreateSerializer,
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -166,7 +167,7 @@ class CustomAuthToken(ObtainAuthToken):
 
         if not email or not password:
             return Response(
-                {'error': 'Email and password are required.'},
+                {'error': _('Email and password are required.')},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -174,7 +175,7 @@ class CustomAuthToken(ObtainAuthToken):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
-                {'error': 'No user found with this email address'},
+                {'error': _('No user found with this email address')},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -182,7 +183,7 @@ class CustomAuthToken(ObtainAuthToken):
 
         if user is None:
             return Response(
-                {'error': 'Invalid credentials'},
+                {'error': _('Invalid credentials')},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
