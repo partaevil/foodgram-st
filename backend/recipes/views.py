@@ -32,7 +32,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        queryset = Recipe.objects.all().order_by('id')
+        queryset = Recipe.objects.all().order_by('date_published')
         params = self.request.query_params
 
         # Filter by author
