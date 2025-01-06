@@ -1,11 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import now
 
 User = get_user_model()
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
@@ -24,9 +24,10 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = _("User Profile")
         verbose_name_plural = _("User Profiles")
-    
+
     def __str__(self):
         return f"{self.user.username}'s profile"
+
 
 class Ingredient(models.Model):
     name = models.CharField(
@@ -41,9 +42,10 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = _("Ingredient")
         verbose_name_plural = _("Ingredients")
-    
+
     def __str__(self):
         return f"{self.name} ({self.measurement_unit})"
+
 
 class Recipe(models.Model):
     author = models.ForeignKey(
@@ -68,16 +70,17 @@ class Recipe(models.Model):
         verbose_name=_("Cooking Time (minutes)")
     )
     date_published = models.DateTimeField(
-        default=now, 
+        default=now,
         verbose_name=_("Date Published")
     )
 
     class Meta:
         verbose_name = _("Recipe")
         verbose_name_plural = _("Recipes")
-    
+
     def __str__(self):
         return self.name
+
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
@@ -101,9 +104,15 @@ class RecipeIngredient(models.Model):
         unique_together = ('recipe', 'ingredient')
         verbose_name = _("Recipe Ingredient")
         verbose_name_plural = _("Recipe Ingredients")
-    
+
     def __str__(self):
-        return f"{self.amount} {self.ingredient.measurement_unit} of {self.ingredient.name} in {self.recipe.name}"
+        return f"""
+            {self.amount}
+            {self.ingredient.measurement_unit}
+            of {self.ingredient.name}
+            in {self.recipe.name}
+        """
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -123,9 +132,10 @@ class Favorite(models.Model):
         unique_together = ('user', 'recipe')
         verbose_name = _("Favorite")
         verbose_name_plural = _("Favorites")
-    
+
     def __str__(self):
         return f"{self.user.username} favors {self.recipe.name}"
+
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
@@ -145,9 +155,10 @@ class ShoppingCart(models.Model):
         unique_together = ('user', 'recipe')
         verbose_name = _("Shopping Cart")
         verbose_name_plural = _("Shopping Carts")
-    
+
     def __str__(self):
         return f"{self.user.username} has {self.recipe.name} in cart"
+
 
 class Subscription(models.Model):
     user = models.ForeignKey(
@@ -171,6 +182,6 @@ class Subscription(models.Model):
         unique_together = ('user', 'author')
         verbose_name = _("Subscription")
         verbose_name_plural = _("Subscriptions")
-    
+
     def __str__(self):
         return f"{self.user.username} subscribes to {self.author.username}"

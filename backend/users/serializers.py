@@ -7,10 +7,12 @@ from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('avatar',)
+
 
 class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
@@ -19,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                 'is_subscribed', 'avatar')
+                  'is_subscribed', 'avatar')
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
@@ -33,6 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.profile.avatar.url)
         return None
 
+
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -43,7 +46,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         """Ensure the email is unique."""
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('A user with this email already exists.')
+            raise serializers.ValidationError(
+                'A user with this email already exists.')
         return value
 
     def validate_password(self, value):
@@ -53,15 +57,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
         except ValidationError as e:
             raise serializers.ValidationError(e.messages)
         return value
-    
+
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         UserProfile.objects.create(user=user)
         return user
 
+
 class PasswordChangeSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
+
 
 class AvatarSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField()
@@ -69,6 +75,7 @@ class AvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('avatar',)
+
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='author.email')
@@ -84,23 +91,25 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                 'is_subscribed', 'recipes', 'recipes_count', 'avatar')
+                  'is_subscribed', 'recipes', 'recipes_count', 'avatar')
 
     def get_is_subscribed(self, obj):
-        return True  # Since this is a subscription list, all entries are subscribed
+        # Since this is a subscription list, all entries are subscribed
+        return True
 
     def get_recipes(self, obj):
         request = self.context.get('request')
         recipes_limit = request.query_params.get('recipes_limit')
         recipes = obj.author.recipes.all()
-        
+
         if recipes_limit:
             try:
                 recipes = recipes[:int(recipes_limit)]
             except ValueError:
                 pass
-        
-        serializer = RecipeShortSerializer(recipes, many=True, context=self.context)
+
+        serializer = RecipeShortSerializer(
+            recipes, many=True, context=self.context)
         return serializer.data
 
     def get_avatar(self, obj):

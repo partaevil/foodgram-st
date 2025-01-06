@@ -1,14 +1,13 @@
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from core.models import UserProfile, Subscription, Recipe
+from core.models import UserProfile, Recipe
 import base64
 from django.core.files.uploadedfile import SimpleUploadedFile
-import os
 
 User = get_user_model()
+
 
 class UserViewSetTests(APITestCase):
     def setUp(self):
@@ -22,7 +21,7 @@ class UserViewSetTests(APITestCase):
         }
         self.user = User.objects.create_user(**self.user_data)
         self.profile = UserProfile.objects.create(user=self.user)
-        
+
         # Create another user for subscription tests
         self.other_user = User.objects.create_user(
             email='other@example.com',
@@ -72,7 +71,7 @@ class UserViewSetTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # Verify old password doesn't work
         self.client.logout()
         response = self.client.post(reverse('token_login'), {
@@ -84,18 +83,18 @@ class UserViewSetTests(APITestCase):
     def test_subscription_endpoints(self):
         """Test subscription-related endpoints"""
         self.client.force_authenticate(user=self.user)
-        
+
         # Test subscribe
         url = reverse('user-subscribe', kwargs={'pk': self.other_user.id})
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Test subscriptions list
         url = reverse('user-subscriptions')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
-        
+
         # Test unsubscribe
         url = reverse('user-subscribe', kwargs={'pk': self.other_user.id})
         response = self.client.delete(url)
@@ -105,19 +104,23 @@ class UserViewSetTests(APITestCase):
         """Test avatar upload and deletion"""
         self.client.force_authenticate(user=self.user)
         url = reverse('user-avatar')
-        
+
         # Create a test image
-        image_content = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
-        temp_image = SimpleUploadedFile("test_image.png", image_content, content_type="image/png")
-        
+        image_content = base64.b64decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+        temp_image = SimpleUploadedFile(
+            "test_image.png", image_content, content_type="image/png")
+
         # Test upload
-        response = self.client.put(url, {'avatar': temp_image}, format='multipart')
+        response = self.client.put(
+            url, {'avatar': temp_image}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('avatar' in response.data)
-        
+
         # Test deletion
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
 
 class CustomAuthTokenTests(APITestCase):
     def setUp(self):
@@ -151,12 +154,13 @@ class CustomAuthTokenTests(APITestCase):
             'password': 'testpass123'
         })
         token = response.data['auth_token']
-        
+
         # Then logout
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token}')
         logout_url = reverse('token_logout')
         response = self.client.post(logout_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
 
 class UserSecurityAPITests(APITestCase):
     def setUp(self):
@@ -170,7 +174,7 @@ class UserSecurityAPITests(APITestCase):
             password='testpass123'
         )
         self.profile1 = UserProfile.objects.create(user=self.user1)
-        
+
         # Create secondary test user
         self.user2 = User.objects.create_user(
             email='user2@example.com',
@@ -180,7 +184,7 @@ class UserSecurityAPITests(APITestCase):
             password='testpass123'
         )
         self.profile2 = UserProfile.objects.create(user=self.user2)
-    
+
     def test_duplicate_email_registration(self):
         """Test that users cannot register with an existing email"""
         url = reverse('user-list')
@@ -224,19 +228,20 @@ class UserSecurityAPITests(APITestCase):
                 'expected_status': status.HTTP_400_BAD_REQUEST
             }
         ]
-        
+
         base_data = {
             'email': 'new@example.com',
             'username': 'newuser',
             'first_name': 'New',
             'last_name': 'User'
         }
-        
+
         for test_case in test_cases:
             data = base_data.copy()
             data['password'] = test_case['password']
             response = self.client.post(url, data, format='json')
-            self.assertEqual(response.status_code, test_case['expected_status'])
+            self.assertEqual(response.status_code,
+                             test_case['expected_status'])
 
     def test_self_subscription_prevention(self):
         """Test that users cannot subscribe to themselves"""
@@ -257,9 +262,10 @@ class UserSecurityAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_subscription_count_accuracy(self):
-        """Test that subscription count is accurate when subscribing/unsubscribing"""
+        """Test that subscription count
+        is accurate when subscribing/unsubscribing"""
         self.client.force_authenticate(user=self.user1)
-        
+
         # Create some recipes for user2
         for i in range(3):
             Recipe.objects.create(
@@ -269,11 +275,12 @@ class UserSecurityAPITests(APITestCase):
                 cooking_time=30,
                 image=SimpleUploadedFile(
                     f"recipe_{i}.png",
-                    base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='),
+                    base64.b64decode(
+                        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='),
                     content_type="image/png"
                 )
             )
-        
+
         # Subscribe
         url = reverse('user-subscribe', kwargs={'pk': self.user2.id})
         response = self.client.post(url)
@@ -284,11 +291,11 @@ class UserSecurityAPITests(APITestCase):
         """Test multiple subscription attempts to the same author"""
         self.client.force_authenticate(user=self.user1)
         url = reverse('user-subscribe', kwargs={'pk': self.user2.id})
-        
+
         # First subscription should succeed
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Second attempt should fail
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -306,25 +313,33 @@ class UserSecurityAPITests(APITestCase):
                 'expected_status': status.HTTP_400_BAD_REQUEST
             },
             {
-                'data': {'email': 'nonexistent@example.com', 'password': 'testpass123'},  # Non-existent user
+                # Non-existent user
+                'data': {
+                    'email': 'nonexistent@example.com',
+                    'password': 'testpass123'
+                },
                 'expected_status': status.HTTP_400_BAD_REQUEST
             }
         ]
-        
+
         for test_case in test_cases:
             response = self.client.post(url, test_case['data'], format='json')
-            self.assertEqual(response.status_code, test_case['expected_status'])
+            self.assertEqual(response.status_code,
+                             test_case['expected_status'])
 
     def test_unauthorized_avatar_operations(self):
         """Test avatar operations without authentication"""
         url = reverse('user-avatar')
-        
+
         # Test unauthorized upload
-        image_content = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
-        temp_image = SimpleUploadedFile("test_image.png", image_content, content_type="image/png")
-        response = self.client.put(url, {'avatar': temp_image}, format='multipart')
+        image_content = base64.b64decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+        temp_image = SimpleUploadedFile(
+            "test_image.png", image_content, content_type="image/png")
+        response = self.client.put(
+            url, {'avatar': temp_image}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        
+
         # Test unauthorized deletion
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -333,45 +348,48 @@ class UserSecurityAPITests(APITestCase):
         """Test uploading invalid files as avatar"""
         self.client.force_authenticate(user=self.user1)
         url = reverse('user-avatar')
-        
+
         # Test non-image file
-        text_file = SimpleUploadedFile("test.txt", b"hello world", content_type="text/plain")
-        response = self.client.put(url, {'avatar': text_file}, format='multipart')
+        text_file = SimpleUploadedFile(
+            "test.txt", b"hello world", content_type="text/plain")
+        response = self.client.put(
+            url, {'avatar': text_file}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_subscription_list_pagination(self):
         """Test pagination of subscription list"""
         self.client.force_authenticate(user=self.user1)
-        
+
         # Create multiple users and subscribe to them
         test_users = []
         for i in range(15):  # Create enough users to trigger pagination
             test_user = User.objects.create_user(
-                email=f'testuser{i+100}@example.com',  
-                username=f'testuser{i+100}',  
-                first_name=f'Test{i+100}',
+                email=f'testuser{i + 100}@example.com',
+                username=f'testuser{i + 100}',
+                first_name=f'Test{i + 100}',
                 last_name='User',
                 password='testpass123'
             )
             UserProfile.objects.create(user=test_user)
             test_users.append(test_user)
-            
+
             # Subscribe to each user
             url = reverse('user-subscribe', kwargs={'pk': test_user.id})
             self.client.post(url)
-        
+
         # Test first page
         url = reverse('user-subscriptions')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('next' in response.data)  # Should have next page
-        self.assertEqual(len(response.data['results']), 10)  # Default pagination size
-        
+        # Default pagination size
+        self.assertEqual(len(response.data['results']), 10)
+
         # Test second page
         response = self.client.get(response.data['next'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 5)  # Remaining items
-        self.assertFalse('next' == None)  # No more pages
+        self.assertFalse(response.data['next'] is None)  # No more pages
 
         for user in test_users:
             user.delete()

@@ -5,9 +5,10 @@ from rest_framework.test import APIClient
 from rest_framework import status
 import base64
 from django.core.files.uploadedfile import SimpleUploadedFile
-from core.models import Recipe, Ingredient, ShoppingCart, Favorite, RecipeIngredient, Subscription
+from core.models import Recipe, Ingredient, RecipeIngredient
 
 User = get_user_model()
+
 
 class RecipeAPITests(TestCase):
     def setUp(self):
@@ -21,13 +22,13 @@ class RecipeAPITests(TestCase):
             last_name='User'
         )
         self.client.force_authenticate(user=self.user)
-        
+
         # Create test ingredient
         self.ingredient = Ingredient.objects.create(
             name='Test Ingredient',
             measurement_unit='g'
         )
-        
+
         # Create test recipe
         self.recipe = Recipe.objects.create(
             author=self.user,
@@ -35,7 +36,7 @@ class RecipeAPITests(TestCase):
             text='Test description',
             cooking_time=30
         )
-        
+
         # Create recipe ingredient
         RecipeIngredient.objects.create(
             recipe=self.recipe,
@@ -44,7 +45,8 @@ class RecipeAPITests(TestCase):
         )
 
         # Create test image
-        self.image_content = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==')
+        self.image_content = base64.b64decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==')
         self.image = SimpleUploadedFile(
             "test.png",
             self.image_content,
@@ -58,14 +60,14 @@ class RecipeAPITests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('results' in response.data)
         self.assertTrue('count' in response.data)
-        
+
     def test_recipe_detail(self):
         """Test getting single recipe details"""
         url = reverse('recipe-detail', args=[self.recipe.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Test Recipe')
-        
+
     def test_create_recipe(self):
         """Test creating a new recipe"""
         url = reverse('recipe-list')
@@ -74,12 +76,14 @@ class RecipeAPITests(TestCase):
             'text': 'New description',
             'cooking_time': 45,
             'ingredients': [{'id': self.ingredient.id, 'amount': 200}],
-            'image': f"data:image/png;base64,{base64.b64encode(self.image_content).decode()}"
+            'image': f"data:image/png;base64,{
+                base64.b64encode(self.image_content).decode()
+            }"
         }
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], 'New Recipe')
-        
+
     def test_update_recipe(self):
         """Test updating a recipe"""
         url = reverse('recipe-detail', args=[self.recipe.id])
@@ -92,47 +96,48 @@ class RecipeAPITests(TestCase):
         response = self.client.patch(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Updated Recipe')
-        
+
     def test_delete_recipe(self):
         """Test deleting a recipe"""
         url = reverse('recipe-detail', args=[self.recipe.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        
+
     def test_favorite_recipe(self):
         """Test adding and removing recipe from favorites"""
         # Add to favorites
         url = reverse('recipe-favorite', args=[self.recipe.id])
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Check if it's in favorites
         list_url = reverse('recipe-list')
         response = self.client.get(list_url)
         self.assertTrue(response.data['results'][0]['is_favorited'])
-        
+
         # Remove from favorites
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        
+
     def test_shopping_cart(self):
         """Test adding and removing recipe from shopping cart"""
         # Add to shopping cart
         url = reverse('recipe-shopping-cart', args=[self.recipe.id])
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Check if it's in shopping cart
         list_url = reverse('recipe-list')
         response = self.client.get(list_url)
         self.assertTrue(response.data['results'][0]['is_in_shopping_cart'])
-        
+
         # Download shopping cart
         download_url = reverse('recipe-download-shopping-cart')
         response = self.client.get(download_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response['Content-Type'], 'text/csv; charset=utf-8-sig')
-        
+        self.assertEqual(response['Content-Type'],
+                         'text/csv; charset=utf-8-sig')
+
         # Remove from shopping cart
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -152,29 +157,31 @@ class IngredientAPITests(TestCase):
             name='Test Ingredient',
             measurement_unit='g'
         )
-        
+
     def test_ingredient_list(self):
         """Test getting list of ingredients"""
         url = reverse('ingredient-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) > 0)
-        
+
     def test_ingredient_detail(self):
         """Test getting single ingredient details"""
         url = reverse('ingredient-detail', args=[self.ingredient.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Test Ingredient')
-        
+
     def test_ingredient_search(self):
         """Test searching ingredients by name"""
         url = reverse('ingredient-list')
-        Ingredient.objects.create(name='Another Ingredient', measurement_unit='ml')
+        Ingredient.objects.create(
+            name='Another Ingredient', measurement_unit='ml')
         response = self.client.get(url, {'name': 'Test'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'Test Ingredient')
+
 
 class RecipeSecurityAPITests(TestCase):
     def setUp(self):
@@ -194,15 +201,16 @@ class RecipeSecurityAPITests(TestCase):
             first_name='User',
             last_name='Two'
         )
-        
+
         # Create test ingredient
         self.ingredient = Ingredient.objects.create(
             name='Test Ingredient',
             measurement_unit='g'
         )
-        
+
         # Create test image
-        self.image_content = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==')
+        self.image_content = base64.b64decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==')
         self.image = SimpleUploadedFile(
             "test.png",
             self.image_content,
@@ -217,7 +225,7 @@ class RecipeSecurityAPITests(TestCase):
             cooking_time=30,
             image=self.image
         )
-        
+
         RecipeIngredient.objects.create(
             recipe=self.recipe1,
             ingredient=self.ingredient,
@@ -233,7 +241,9 @@ class RecipeSecurityAPITests(TestCase):
             'text': 'Description',
             'cooking_time': 30,
             'ingredients': [{'id': self.ingredient.id, 'amount': 100}],
-            'image': f"data:image/png;base64,{base64.b64encode(self.image_content).decode()}"
+            'image': f"data:image/png;base64,{
+                base64.b64encode(self.image_content).decode()
+            }"
         }
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -250,7 +260,7 @@ class RecipeSecurityAPITests(TestCase):
         }
         response = self.client.patch(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
+
         # Verify recipe wasn't changed
         self.recipe1.refresh_from_db()
         self.assertEqual(self.recipe1.name, 'User1 Recipe')
@@ -261,7 +271,7 @@ class RecipeSecurityAPITests(TestCase):
         url = reverse('recipe-detail', args=[self.recipe1.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
+
         # Verify recipe still exists
         self.assertTrue(Recipe.objects.filter(id=self.recipe1.id).exists())
 
@@ -269,7 +279,7 @@ class RecipeSecurityAPITests(TestCase):
         """Test validation errors during recipe creation"""
         self.client.force_authenticate(user=self.user1)
         url = reverse('recipe-list')
-        
+
         # Test missing required fields
         payload = {
             'name': 'Invalid Recipe'
@@ -277,14 +287,16 @@ class RecipeSecurityAPITests(TestCase):
         }
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        
+
         # Test invalid cooking time
         payload = {
             'name': 'Invalid Recipe',
             'text': 'Description',
             'cooking_time': -1,  # Invalid value
             'ingredients': [{'id': self.ingredient.id, 'amount': 100}],
-            'image': f"data:image/png;base64,{base64.b64encode(self.image_content).decode()}"
+            'image': f"data:image/png;base64,{
+                base64.b64encode(self.image_content).decode()
+            }"
         }
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -293,11 +305,11 @@ class RecipeSecurityAPITests(TestCase):
         """Test adding the same recipe to favorites twice"""
         self.client.force_authenticate(user=self.user2)
         url = reverse('recipe-favorite', args=[self.recipe1.id])
-        
+
         # First addition should succeed
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Second addition should fail
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -306,11 +318,11 @@ class RecipeSecurityAPITests(TestCase):
         """Test adding the same recipe to shopping cart twice"""
         self.client.force_authenticate(user=self.user2)
         url = reverse('recipe-shopping-cart', args=[self.recipe1.id])
-        
+
         # First addition should succeed
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Second addition should fail
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -339,7 +351,7 @@ class RecipeSecurityAPITests(TestCase):
             cooking_time=45,
             image=self.image
         )
-        
+
         url = reverse('recipe-list')
         response = self.client.get(url, {'author': self.user1.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -354,8 +366,11 @@ class RecipeSecurityAPITests(TestCase):
             'name': 'Invalid Recipe',
             'text': 'Description',
             'cooking_time': 30,
-            'ingredients': [{'id': self.ingredient.id, 'amount': -1}],  # Invalid amount
-            'image': f"data:image/png;base64,{base64.b64encode(self.image_content).decode()}"
+            # Invalid amount
+            'ingredients': [{'id': self.ingredient.id, 'amount': -1}],
+            'image': f"data:image/png;base64,{
+                base64.b64encode(self.image_content).decode()
+            }"
         }
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
