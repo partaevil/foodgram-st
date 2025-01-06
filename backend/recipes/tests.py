@@ -46,7 +46,10 @@ class RecipeAPITests(TestCase):
 
         # Create test image
         self.image_content = base64.b64decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==')
+            """iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAg
+            MAAABieywaAAAACVBMVEUAAAD///9fX1/
+            S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAC
+            klEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==""")
         self.image = SimpleUploadedFile(
             "test.png",
             self.image_content,
@@ -210,7 +213,10 @@ class RecipeSecurityAPITests(TestCase):
 
         # Create test image
         self.image_content = base64.b64decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==')
+            """iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABie
+            ywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACX
+            BIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWN
+            oAAAAggCByxOyYQAAAABJRU5ErkJggg==""")
         self.image = SimpleUploadedFile(
             "test.png",
             self.image_content,

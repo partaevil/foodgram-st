@@ -107,7 +107,9 @@ class UserViewSetTests(APITestCase):
 
         # Create a test image
         image_content = base64.b64decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+            """iVBORw0KGgoAAAANSUhEUgAAAAEAA
+            AABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwA
+            DhgGAWjR9awAAAABJRU5ErkJggg==""")
         temp_image = SimpleUploadedFile(
             "test_image.png", image_content, content_type="image/png")
 
@@ -276,7 +278,9 @@ class UserSecurityAPITests(APITestCase):
                 image=SimpleUploadedFile(
                     f"recipe_{i}.png",
                     base64.b64decode(
-                        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='),
+                        """iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB
+                        CAYAAAAfFcSJAAAADUlEQVR42mNk
+                        +M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="""),
                     content_type="image/png"
                 )
             )
@@ -333,7 +337,8 @@ class UserSecurityAPITests(APITestCase):
 
         # Test unauthorized upload
         image_content = base64.b64decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+            """iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQV
+            R42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==""")
         temp_image = SimpleUploadedFile(
             "test_image.png", image_content, content_type="image/png")
         response = self.client.put(
