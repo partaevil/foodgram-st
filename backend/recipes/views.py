@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.exceptions import PermissionDenied
 from core.models import Recipe, Ingredient, ShoppingCart, Favorite, RecipeIngredient
 from .serializers import RecipeSerializer, IngredientSerializer
 from core.serializers import RecipeShortSerializer
@@ -65,6 +66,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             context['ingredients'] = self.request.data.get('ingredients', [])
         return context
 
+    def perform_update(self, serializer):
+        if self.get_object().author != self.request.user:
+            raise PermissionDenied("You do not have permission to edit this recipe.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.author != self.request.user:
+            raise PermissionDenied("You do not have permission to delete this recipe.")
+        instance.delete()
+    
     @action(detail=True, methods=['get'])
     def get_link(self, request, pk=None):
         recipe = self.get_object()
