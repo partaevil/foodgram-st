@@ -15,9 +15,6 @@ static/
 # Exclude localization compiled files (optional, depends on deployment process)
 locale/**/*.mo
 
-# Exclude test data
-test_data.json
-
 # Exclude local configuration files
 *.env
 .env*

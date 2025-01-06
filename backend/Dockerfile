@@ -10,6 +10,7 @@ COPY . .
 
 EXPOSE 8000
 
+COPY ./test_data.json /test_data.json
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
