@@ -1,0 +1,32 @@
+# Exclude Python cache files and directories
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Exclude the database
+db.sqlite3
+
+# Exclude media files (user-uploaded files)
+media/
+
+# Exclude static files if they are generated dynamically
+static/
+
+# Exclude localization compiled files (optional, depends on deployment process)
+locale/**/*.mo
+
+# Exclude test data
+test_data.json
+
+# Exclude local configuration files
+*.env
+.env*
+
+# Exclude Git repository and metadata
+.git/
+.gitignore
+
+# Exclude editor/IDE configurations
+.vscode/
+.idea/
+*.swp
