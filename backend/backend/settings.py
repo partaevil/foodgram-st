@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import sys
 
 from pathlib import Path
 
@@ -108,6 +109,11 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+if 'test' in sys.argv and DEBUG:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase'
+    }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
