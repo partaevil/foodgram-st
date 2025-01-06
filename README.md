@@ -29,6 +29,6 @@ docker-compose run backend python manage.py createsuperuser
 
 ## Доступ к приложению
 
-- Веб-интерфейс: http://localhost
-- API документация: http://localhost/api/docs
-- Админ-панель: http://localhost/admin
+- Веб-интерфейс: http://localhost/
+- API документация: http://localhost/api/docs/
+- Админ-панель: http://localhost/admin/
