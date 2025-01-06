@@ -6,6 +6,7 @@ from .models import (
     Favorite, ShoppingCart, Subscription
 )
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -46,7 +47,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def favorites_count(self, obj):
         return obj.favorited_by.count()
-    favorites_count.short_description = 'Добавлений в избранное'
+    favorites_count.short_description = _('Added to favorites')
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
