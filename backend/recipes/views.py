@@ -35,6 +35,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         queryset = Recipe.objects.all().order_by('id')
         params = self.request.query_params
 
+        # Filter by author
+        author_id = params.get('author')
+        if author_id:
+            queryset = queryset.filter(author_id=author_id)
+
         if self.request.user.is_authenticated:
             # Filter by shopping cart
             is_in_shopping_cart = params.get('is_in_shopping_cart')
