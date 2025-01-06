@@ -12,9 +12,6 @@ media/
 # Exclude static files if they are generated dynamically
 static/
 
-# Exclude localization compiled files (optional, depends on deployment process)
-locale/**/*.mo
-
 # Exclude local configuration files
 *.env
 .env*
