@@ -2,3 +2,12 @@
 
 По адресу http://localhost изучите фронтенд веб-приложения, а по адресу http://localhost/api/docs/ — спецификацию API.
 
+Поднятие:
+```bash
+docker-compose up --build
+```
+
+Создание superuser:
+```bash
+docker-compose run backend python manage.py createsuperuser
+```
