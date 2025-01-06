@@ -43,7 +43,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         unique_ids = set()
         for ingredient in ingredients:
             ingredient_id = ingredient.get('id')
-            amount = ingredient.get('amount')
+            amount = int(ingredient.get('amount'))
 
             if not ingredient_id or not isinstance(ingredient_id, int):
                 raise serializers.ValidationError("Each ingredient must have a valid 'id'.")
