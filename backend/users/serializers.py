@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from core.models import UserProfile, Subscription
 from core.serializers import Base64ImageField, RecipeShortSerializer
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -38,6 +40,20 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'username', 'first_name', 'last_name', 'password')
 
+    def validate_email(self, value):
+        """Ensure the email is unique."""
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('A user with this email already exists.')
+        return value
+
+    def validate_password(self, value):
+        """Ensure the password meets strength requirements."""
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return value
+    
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         UserProfile.objects.create(user=user)
