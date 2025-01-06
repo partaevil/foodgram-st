@@ -7,7 +7,6 @@ from core.models import (Recipe, Ingredient,
                          ShoppingCart, Favorite, RecipeIngredient)
 from .serializers import RecipeSerializer, IngredientSerializer
 from core.serializers import RecipeShortSerializer
-import hashlib
 import csv
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -83,12 +82,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 "You do not have permission to delete this recipe.")
         instance.delete()
 
-    @action(detail=True, methods=['get'])
+    @action(
+        detail=True,
+        methods=['get'],
+        url_path='get-link'
+    )
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        hash_object = hashlib.md5(str(recipe.id).encode())
-        short_hash = hash_object.hexdigest()[:3]
-        short_link = f"https://localhost/s/{short_hash}"
+        short_link = f"{request.get_host()}/recipes/{str(recipe.id)}"
         return Response({'short-link': short_link})
 
     @action(detail=True, methods=['post', 'delete'])
