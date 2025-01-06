@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from django.utils.timezone import now
 
 User = get_user_model()
 
@@ -65,6 +66,10 @@ class Recipe(models.Model):
     cooking_time = models.IntegerField(
         validators=[MinValueValidator(1)],
         verbose_name=_("Cooking Time (minutes)")
+    )
+    date_published = models.DateTimeField(
+        default=now, 
+        verbose_name=_("Date Published")
     )
 
     class Meta:
