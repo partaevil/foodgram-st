@@ -394,7 +394,7 @@ class UserSecurityAPITests(APITestCase):
         response = self.client.get(response.data['next'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 5)  # Remaining items
-        self.assertFalse(response.data['next'] is None)  # No more pages
+        self.assertTrue(response.data['next'] is None)  # No more pages
 
         for user in test_users:
             user.delete()
