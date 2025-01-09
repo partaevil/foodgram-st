@@ -17,6 +17,7 @@ from .serializers import (RecipeShortSerializer, UserSerializer,
                           IngredientSerializer)
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+import hashlib
 
 User = get_user_model()
 
@@ -98,7 +99,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        short_link = f"{request.get_host()}/recipes/{str(recipe.id)}"
+        # I dont see in front router short link handler
+        # and kfinder cant find something related to resolver
+        # So something similar to docs
+        hash_object = hashlib.md5(str(recipe.id).encode())
+        short_hash = hash_object.hexdigest()[:3]
+        short_link = f"{request.get_host()}/recipes/s/{short_hash}"
         return Response({'short-link': short_link})
 
     @action(detail=True, methods=['post', 'delete'])
