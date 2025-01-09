@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.exceptions import PermissionDenied
 from core.models import (Recipe, Ingredient, Subscription, UserProfile,
-                         ShoppingCart, Favorite, RecipeIngredient)
+                         ShoppingCart, Favorite, RecipeIngredient, ShortLink)
 import csv
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -99,13 +99,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        # I dont see in front router short link handler
-        # and kfinder cant find something related to resolver
-        # So something similar to docs
         hash_object = hashlib.md5(str(recipe.id).encode())
         short_hash = hash_object.hexdigest()[:3]
-        short_link = f"{request.get_host()}/recipes/s/{short_hash}"
-        return Response({'short-link': short_link})
+
+        # Create or get short link
+        short_link, created = ShortLink.objects.get_or_create(
+            recipe=recipe,
+            defaults={'hash': short_hash}
+        )
+
+        short_link_url = f"{request.get_host()}/s/{short_link.hash}"
+        return Response({'short-link': short_link_url})
 
     @action(detail=True, methods=['post', 'delete'])
     def shopping_cart(self, request, pk=None):

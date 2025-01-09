@@ -184,3 +184,16 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f"{self.user.username} subscribes to {self.author.username}"
+
+
+class ShortLink(models.Model):
+    hash = models.CharField(max_length=10, unique=True)
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='short_links'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Short link for {self.recipe.name}"
