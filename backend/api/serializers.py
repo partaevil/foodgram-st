@@ -4,17 +4,8 @@ from core.models import (Recipe, Ingredient, RecipeIngredient,
 from core.serializers import Base64ImageField
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
 
 User = get_user_model()
-
-
-class RecipeShortSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time', 'date_published')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -61,10 +52,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def validate_password(self, value):
         """Ensure the password meets strength requirements."""
-        try:
-            validate_password(value)
-        except ValidationError as e:
-            raise serializers.ValidationError(e.messages)
+        validate_password(value)
         return value
 
     def create(self, validated_data):
@@ -76,6 +64,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class PasswordChangeSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
+
+    def validate_new_password(self, value):
+        """Ensure the password meets strength requirements."""
+        validate_password(value)
+        return value
 
 
 class AvatarSerializer(serializers.ModelSerializer):
@@ -121,12 +114,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             recipes, many=True, context=self.context)
         return serializer.data
 
-    def get_avatar(self, obj):
-        request = self.context.get('request')
-        if hasattr(obj.author, 'profile') and obj.author.profile.avatar:
-            return request.build_absolute_uri(obj.author.profile.avatar.url)
-        return None
-
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -148,6 +135,14 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
         if value < 1:
             raise serializers.ValidationError("Amount must be greater than 0.")
         return value
+
+
+class RecipeShortSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time', 'date_published')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
