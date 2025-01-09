@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-from django.utils.translation import gettext_lazy as _
 import os
 import sys
 
@@ -60,8 +59,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'import_export',
     'core',
-    'users',
-    'recipes',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -170,17 +168,6 @@ USE_I18N = True
 USE_TZ = True
 
 USE_L10N = True
-
-LOCALE_PATHS = (
-    os.path.join(BASE_DIR, 'locale'),
-)
-
-
-LANGUAGES = (
-    ('en', _('English')),
-    ('ru', _('Russian')),
-)
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
