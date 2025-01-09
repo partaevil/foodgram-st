@@ -8,15 +8,22 @@ from django.contrib.auth.password_validation import validate_password
 User = get_user_model()
 
 
+class AvatarMixin:
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if hasattr(obj, 'profile') and obj.profile.avatar:
+            return request.build_absolute_uri(obj.profile.avatar.url)
+        return None
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('avatar',)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer, AvatarMixin):
     is_subscribed = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -28,12 +35,6 @@ class UserSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.subscribers.filter(user=request.user).exists()
         return False
-
-    def get_avatar(self, obj):
-        request = self.context.get('request')
-        if hasattr(obj, 'profile') and obj.profile.avatar:
-            return request.build_absolute_uri(obj.profile.avatar.url)
-        return None
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -79,7 +80,7 @@ class AvatarSerializer(serializers.ModelSerializer):
         fields = ('avatar',)
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
+class SubscriptionSerializer(serializers.ModelSerializer, AvatarMixin):
     email = serializers.EmailField(source='author.email')
     id = serializers.IntegerField(source='author.id')
     username = serializers.CharField(source='author.username')
@@ -88,7 +89,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField()
-    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = Subscription
