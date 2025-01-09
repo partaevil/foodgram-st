@@ -24,6 +24,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer, AvatarMixin):
     is_subscribed = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -89,6 +90,7 @@ class SubscriptionSerializer(serializers.ModelSerializer, AvatarMixin):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = Subscription
