@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from core.models import (Recipe, Ingredient, RecipeIngredient,
-                         UserProfile, Subscription)
+                         UserProfile)
 from core.serializers import Base64ImageField
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -81,7 +81,7 @@ class AvatarSerializer(serializers.ModelSerializer):
         fields = ('avatar',)
 
 
-class SubscriptionSerializer(serializers.ModelSerializer, AvatarMixin):
+class SubscriptionSerializer(UserSerializer):
     email = serializers.EmailField(source='author.email')
     id = serializers.IntegerField(source='author.id')
     username = serializers.CharField(source='author.username')
@@ -89,8 +89,6 @@ class SubscriptionSerializer(serializers.ModelSerializer, AvatarMixin):
     last_name = serializers.CharField(source='author.last_name')
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField()
-    avatar = serializers.SerializerMethodField()
-    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -111,15 +109,6 @@ class SubscriptionSerializer(serializers.ModelSerializer, AvatarMixin):
         serializer = RecipeShortSerializer(
             recipes, many=True, context=self.context)
         return serializer.data
-
-    def get_is_subscribed(self, obj):
-        """Check if the current user is subscribed to the author."""
-        # Do not delete
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return False
-        return Subscription.objects.filter(
-            user=request.user, author=obj.author).exists()
 
 
 class IngredientSerializer(serializers.ModelSerializer):
