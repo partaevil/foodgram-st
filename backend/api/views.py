@@ -67,10 +67,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if is_favorited is not None:
                 if is_favorited == '1':
                     queryset = queryset.filter(
-                        favorited_by_user__user=self.request.user)
+                        favorited_by_users__user=self.request.user)
                 elif is_favorited == '0':
                     queryset = queryset.exclude(
-                        favorited_by_user__user=self.request.user)
+                        favorited_by_users__user=self.request.user)
 
         return queryset.distinct()
 
