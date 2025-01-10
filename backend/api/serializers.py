@@ -171,6 +171,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                     "Duplicate ingredients are not allowed.")
             unique_ids.add(ingredient_id)
 
+        data['ingredients'] = ingredients
         return data
 
     def get_is_favorited(self, obj):
