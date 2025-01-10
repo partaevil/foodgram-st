@@ -22,7 +22,7 @@ from core.views import short_link_redirect
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    path('s/<str:hash>/', short_link_redirect, name='short-link'),
+    path('s/<int:pk>/', short_link_redirect, name='short-link'),
 ]
 
 if settings.DEBUG:

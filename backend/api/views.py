@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.exceptions import PermissionDenied
 from core.models import (Recipe, Ingredient, Subscription, UserProfile,
-                         ShoppingCart, Favorite, RecipeIngredient, ShortLink)
+                         ShoppingCart, Favorite, RecipeIngredient)
 import csv
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -17,7 +17,7 @@ from .serializers import (RecipeShortSerializer, UserSerializer,
                           IngredientSerializer)
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-import hashlib
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -57,20 +57,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if is_in_shopping_cart is not None:
                 if is_in_shopping_cart == '1':
                     queryset = queryset.filter(
-                        in_carts_of__user=self.request.user)
+                        in_carts_of_users__user=self.request.user)
                 elif is_in_shopping_cart == '0':
                     queryset = queryset.exclude(
-                        in_carts_of__user=self.request.user)
+                        in_carts_of_users__user=self.request.user)
 
             # Filter by favorites
             is_favorited = params.get('is_favorited')
             if is_favorited is not None:
                 if is_favorited == '1':
                     queryset = queryset.filter(
-                        favorited_by__user=self.request.user)
+                        favorited_by_user__user=self.request.user)
                 elif is_favorited == '0':
                     queryset = queryset.exclude(
-                        favorited_by__user=self.request.user)
+                        favorited_by_user__user=self.request.user)
 
         return queryset.distinct()
 
@@ -98,84 +98,59 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk=None):
-        recipe = self.get_object()
-        hash_object = hashlib.md5(str(recipe.id).encode())
-        short_hash = hash_object.hexdigest()[:3]
-
-        # Create or get short link
-        short_link, created = ShortLink.objects.get_or_create(
-            recipe=recipe,
-            defaults={'hash': short_hash}
-        )
-
-        short_link_url = f"{request.get_host()}/s/{short_link.hash}"
+        short_link_url = request.build_absolute_uri(f'/s/{pk}')
         return Response({'short-link': short_link_url})
+
+    def handle_add_or_remove(self, request, pk, model, error_message):
+        """Function for adding or removing recepies"""
+        recipe = self.get_object()
+
+        if request.method == 'POST':
+            if model.objects.filter(user=request.user, recipe=recipe).exists():
+                return Response(
+                    {'errors': error_message},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            model.objects.create(user=request.user, recipe=recipe)
+            serializer = RecipeShortSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            instance = model.objects.filter(user=request.user, recipe=recipe)
+            if instance.exists():
+                instance.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {'errors': f'Recipe not in {model.__name__.lower()}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(detail=True, methods=['post', 'delete'])
     def shopping_cart(self, request, pk=None):
-        recipe = self.get_object()
-
-        if request.method == 'POST':
-            if ShoppingCart.objects.filter(
-                    user=request.user, recipe=recipe
-            ).exists():
-                return Response(
-                    {'errors': 'Recipe already in shopping cart'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            ShoppingCart.objects.create(user=request.user, recipe=recipe)
-            serializer = RecipeShortSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-            shopping_cart = ShoppingCart.objects.filter(
-                user=request.user, recipe=recipe
-            )
-            if shopping_cart.exists():
-                shopping_cart.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Recipe not in shopping cart'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return self.handle_add_or_remove(
+            request=request,
+            pk=pk,
+            model=ShoppingCart,
+            error_message='Recipe already in shopping cart'
+        )
 
     @action(detail=True, methods=['post', 'delete'])
     def favorite(self, request, pk=None):
-        recipe = self.get_object()
-
-        if request.method == 'POST':
-            if Favorite.objects.filter(
-                user=request.user, recipe=recipe
-            ).exists():
-                return Response(
-                    {'errors': 'Recipe already in favorites'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            Favorite.objects.create(user=request.user, recipe=recipe)
-            serializer = RecipeShortSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-            favorite = Favorite.objects.filter(
-                user=request.user, recipe=recipe)
-            if favorite.exists():
-                favorite.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Recipe not in favorites'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return self.handle_add_or_remove(
+            request=request,
+            pk=pk,
+            model=Favorite,
+            error_message='Recipe already in favorites'
+        )
 
     @action(detail=False, methods=['get'])
     def download_shopping_cart(self, request):
         ingredients = RecipeIngredient.objects.filter(
-            recipe__in_carts_of__user=request.user
+            recipe__in_carts_of_users__user=request.user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).annotate(total_amount=Sum('amount'))
+        ).annotate(total_amount=Sum('amount')).order_by('ingredient__name')
 
         response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
         response['Content-Disposition'] = 'attachment; \
@@ -186,7 +161,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         for item in ingredients:
             writer.writerow([
-                item['ingredient__name'],
+                item['ingredient__name'].capitalize(),
                 item['total_amount'],
                 item['ingredient__measurement_unit']
             ])
@@ -268,11 +243,10 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def subscriptions(self, request):
-        queryset = Subscription.objects.filter(
-            user=request.user
-        ).select_related(
-            'author', 'author__profile'
+        queryset = request.user.subscriptions.select_related(
+            'author', 'author__profiles'
         ).prefetch_related('author__recipes').order_by('id')
+
         page = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(
             page, many=True, context={'request': request})
@@ -312,17 +286,11 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
-            subscription = Subscription.objects.filter(
+            subscription = get_object_or_404(
+                Subscription,
                 user=request.user,
                 author=author
-            ).first()
-
-            if not subscription:
-                return Response(
-                    {'errors': 'You are not subscribed to this author'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
+            )
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 

@@ -4,7 +4,6 @@ from import_export.resources import ModelResource
 from .models import (
     Ingredient, Recipe, RecipeIngredient,
     Favorite, ShoppingCart, Subscription,
-    ShortLink
 )
 from django.contrib.auth import get_user_model
 
@@ -81,9 +80,3 @@ class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'author', 'recipes_count')
     list_filter = ('user', 'author')
     search_fields = ('user__username', 'author__username')
-
-
-@admin.register(ShortLink)
-class ShortLinkAdmin(admin.ModelAdmin):
-    list_display = ('hash', 'recipe', 'created_at')
-    list_filter = ('recipe', 'created_at')

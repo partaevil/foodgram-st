@@ -10,7 +10,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name='profile',
+        related_name='profiles',
         verbose_name="User"
     )
     avatar = models.ImageField(
@@ -41,6 +41,7 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = "Ingredient"
         verbose_name_plural = "Ingredients"
+        ordering = ['name']
 
     def __str__(self):
         return f"{self.name} ({self.measurement_unit})"
@@ -76,6 +77,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = "Recipe"
         verbose_name_plural = "Recipes"
+        ordering = ['-date_published']
 
     def __str__(self):
         return self.name
@@ -90,27 +92,22 @@ class RecipeIngredient(models.Model):
     )
     ingredient = models.ForeignKey(
         Ingredient,
-        related_name='ingredient_recipes',
+        related_name='recipe_ingredients',
         on_delete=models.CASCADE,
         verbose_name="Ingredient"
     )
     amount = models.IntegerField(
         validators=[MinValueValidator(1)],
-        verbose_name="Amount"
+        verbose_name='Amount'
     )
 
     class Meta:
         unique_together = ('recipe', 'ingredient')
-        verbose_name = "Recipe Ingredient"
-        verbose_name_plural = "Recipe Ingredients"
+        verbose_name = 'Recipe Ingredient'
+        verbose_name_plural = 'Recipe Ingredients'
 
     def __str__(self):
-        return f"""
-            {self.amount}
-            {self.ingredient.measurement_unit}
-            of {self.ingredient.name}
-            in {self.recipe.name}
-        """
+        return f'{self.amount} {self.ingredient.name} in {self.recipe.name}'
 
 
 class Favorite(models.Model):
@@ -122,7 +119,7 @@ class Favorite(models.Model):
     )
     recipe = models.ForeignKey(
         Recipe,
-        related_name='favorited_by',
+        related_name='favorited_by_users',  # do not change to favorites
         on_delete=models.CASCADE,
         verbose_name="Recipe"
     )
@@ -145,7 +142,7 @@ class ShoppingCart(models.Model):
     )
     recipe = models.ForeignKey(
         Recipe,
-        related_name='in_carts_of',
+        related_name='in_carts_of_users',
         on_delete=models.CASCADE,
         verbose_name="Recipe"
     )
@@ -184,16 +181,3 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f"{self.user.username} subscribes to {self.author.username}"
-
-
-class ShortLink(models.Model):
-    hash = models.CharField(max_length=10, unique=True)
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='short_links'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Short link for {self.recipe.name}"
