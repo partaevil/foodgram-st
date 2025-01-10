@@ -187,11 +187,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients', [])
-        recipe = super.create(
-            author=self.context['request'].user,
-            **validated_data
-        )
 
+        # why but ok
+        validated_data['author'] = self.context['request'].user
+        recipe = super().create(
+            validated_data
+        )
         self.create_recipe_ingredients(recipe, ingredients_data)
 
         return recipe
