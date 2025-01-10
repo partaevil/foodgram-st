@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from core.models import (Recipe, Ingredient, RecipeIngredient,
-                         UserProfile)
+                         UserProfile, Subscription)
 from core.serializers import Base64ImageField
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -34,7 +34,9 @@ class UserSerializer(serializers.ModelSerializer, AvatarMixin):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return obj.subscribers.filter(user=request.user).exists()
+            author = obj.author if hasattr(obj, 'author') else obj
+            return Subscription.objects.filter(
+                user=request.user, author=author).exists()
         return False
 
 
