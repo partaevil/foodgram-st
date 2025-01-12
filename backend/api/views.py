@@ -42,7 +42,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    
+
     def get_queryset(self):
         queryset = Recipe.objects.all().order_by('-date_published')
         params = self.request.query_params
@@ -74,10 +74,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                         favorited_by_users__user=self.request.user)
 
         return queryset.distinct()
-    
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-    
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if self.request.method in ['POST', 'PATCH']:
@@ -260,7 +260,7 @@ class UserViewSet(viewsets.ModelViewSet):
         subscriptions = request.user.subscriptions.select_related(
             'author', 'author__profiles'
         ).prefetch_related('author__recipes')
-        
+
         authors = [subscription.author for subscription in subscriptions]
         page = self.paginate_queryset(authors)
         serializer = SubscriptionSerializer(
