@@ -58,20 +58,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if is_in_shopping_cart is not None:
                 if is_in_shopping_cart == '1':
                     queryset = queryset.filter(
-                        in_carts_of_users__user=self.request.user)
+                        shopping_carts__user=self.request.user)
                 elif is_in_shopping_cart == '0':
                     queryset = queryset.exclude(
-                        in_carts_of_users__user=self.request.user)
+                        shopping_carts__user=self.request.user)
 
             # Filter by favorites
             is_favorited = params.get('is_favorited')
             if is_favorited is not None:
                 if is_favorited == '1':
                     queryset = queryset.filter(
-                        favorited_by_users__user=self.request.user)
+                        favorites__user=self.request.user)
                 elif is_favorited == '0':
                     queryset = queryset.exclude(
-                        favorited_by_users__user=self.request.user)
+                        favorites__user=self.request.user)
 
         return queryset.distinct()
 
@@ -164,7 +164,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def download_shopping_cart(self, request):
         ingredients = RecipeIngredient.objects.filter(
-            recipe__in_carts_of_users__user=request.user
+            recipe__shopping_carts__user=request.user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
