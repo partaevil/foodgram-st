@@ -102,11 +102,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk=None):
-        get_object_or_404(Recipe, pk=pk)
-        short_link_url = request.build_absolute_uri(
-            reverse('short-link', args=[pk])
+        if Recipe.objects.filter(id=pk).exists():
+            short_link_url = request.build_absolute_uri(
+                reverse('short-link', args=[pk])
+            )
+            return Response({'short-link': short_link_url})
+        return Response(
+            {'errors': 'Recipe with this id not found'},
+            status=status.HTTP_404_NOT_FOUND
         )
-        return Response({'short-link': short_link_url})
 
     def handle_add_or_remove(self, request, pk, model, error_message):
         """Function for adding or removing recipes"""
