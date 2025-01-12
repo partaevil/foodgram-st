@@ -8,6 +8,7 @@ from core.models import (Recipe, Ingredient, Subscription, UserProfile,
 import csv
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.urls import reverse
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import get_user_model, authenticate
 from .serializers import (RecipeShortSerializer, UserSerializer,
@@ -41,7 +42,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-
+    
     def get_queryset(self):
         queryset = Recipe.objects.all().order_by('-date_published')
         params = self.request.query_params
@@ -73,7 +74,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                         favorited_by_users__user=self.request.user)
 
         return queryset.distinct()
-
+    
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if self.request.method in ['POST', 'PATCH']:
@@ -98,32 +102,42 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk=None):
-        short_link_url = request.build_absolute_uri(f'/s/{pk}')
+        get_object_or_404(Recipe, pk=pk)
+        short_link_url = request.build_absolute_uri(
+            reverse('short-link', args=[pk])
+        )
         return Response({'short-link': short_link_url})
 
     def handle_add_or_remove(self, request, pk, model, error_message):
-        """Function for adding or removing recepies"""
+        """Function for adding or removing recipes"""
         recipe = self.get_object()
 
         if request.method == 'POST':
-            if model.objects.filter(user=request.user, recipe=recipe).exists():
+            instance, created = model.objects.get_or_create(
+                user=request.user,
+                recipe=recipe
+            )
+            if not created:
                 return Response(
                     {'errors': error_message},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            model.objects.create(user=request.user, recipe=recipe)
             serializer = RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            instance = model.objects.filter(user=request.user, recipe=recipe)
-            if instance.exists():
-                instance.delete()
+            try:
+                get_object_or_404(
+                    model,
+                    user=request.user,
+                    recipe=recipe
+                ).delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': f'Recipe not in {model.__name__.lower()}'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            except model.DoesNotExist:
+                return Response(
+                    {'errors': f'Recipe not in {model.__name__.lower()}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
     @action(detail=True, methods=['post', 'delete'])
     def shopping_cart(self, request, pk=None):
@@ -243,11 +257,12 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def subscriptions(self, request):
-        queryset = request.user.subscriptions.select_related(
+        subscriptions = request.user.subscriptions.select_related(
             'author', 'author__profiles'
-        ).prefetch_related('author__recipes').order_by('id')
-
-        page = self.paginate_queryset(queryset)
+        ).prefetch_related('author__recipes')
+        
+        authors = [subscription.author for subscription in subscriptions]
+        page = self.paginate_queryset(authors)
         serializer = SubscriptionSerializer(
             page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
@@ -280,18 +295,17 @@ class UserViewSet(viewsets.ModelViewSet):
                 )
 
             serializer = SubscriptionSerializer(
-                subscription,
+                author,
                 context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
-            subscription = get_object_or_404(
+            get_object_or_404(
                 Subscription,
                 user=request.user,
                 author=author
-            )
-            subscription.delete()
+            ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 

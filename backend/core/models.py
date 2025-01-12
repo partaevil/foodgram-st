@@ -178,6 +178,7 @@ class Subscription(models.Model):
         unique_together = ('user', 'author')
         verbose_name = 'Subscription'
         verbose_name_plural = 'Subscriptions'
+        ordering = ['id']
 
     def __str__(self):
         return f'{self.user.username} subscribes to {self.author.username}'
