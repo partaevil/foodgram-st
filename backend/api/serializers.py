@@ -1,4 +1,3 @@
-import logging
 from django.db import transaction
 from rest_framework import serializers
 from core.models import (Recipe, Ingredient, RecipeIngredient,
@@ -171,17 +170,12 @@ class RecipeSerializer(serializers.ModelSerializer):
                 "At least one ingredient is required.")
 
         ingredient_ids = {ingredient.get('id') for ingredient in ingredients}
-        logging.getLogger("django").info(ingredients)
-        logging.getLogger("django").info(ingredient_ids)
         if None in ingredient_ids:
             raise serializers.ValidationError(
                 "Each ingredient must have a valid 'id'."
             )
 
         existing_ingredients = Ingredient.objects.filter(id__in=ingredient_ids)
-        logging.getLogger("django").info(Ingredient.objects.all())
-        logging.getLogger("django").info(f"Found existing ingredients: {
-            list(existing_ingredients.values())}")
         if len(existing_ingredients) != len(ingredient_ids):
             missing_ids = ingredient_ids - \
                 set(existing_ingredients.values_list('id', flat=True))
@@ -234,11 +228,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 )
 
             instance.recipe_ingredients.all().delete()
-
-            # Add new ingredients
             self.create_recipe_ingredients(instance, ingredients_data)
-
-            # Update the main instance
             return super().update(instance, validated_data)
 
     def create_recipe_ingredients(self, recipe, ingredients_data):
