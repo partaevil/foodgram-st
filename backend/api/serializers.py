@@ -213,16 +213,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.recipe_ingredients.all().delete()
 
         with transaction.atomic():
-            ingredient_ids = {ingredient['id']
-                              for ingredient in ingredients_data}
-            existing_ingredients = Ingredient.objects.filter(
-                id__in=ingredient_ids)
-
-            if len(existing_ingredients) != len(ingredient_ids):
-                raise serializers.ValidationError(
-                    "Some ingredients do not exist in the database."
-                )
-
             instance.recipe_ingredients.all().delete()
             self.create_recipe_ingredients(instance, ingredients_data)
             return super().update(instance, validated_data)
