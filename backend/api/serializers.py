@@ -170,10 +170,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                 "At least one ingredient is required.")
 
         ingredient_ids = {ingredient.get('id') for ingredient in ingredients}
-        if None in ingredient_ids:
-            raise serializers.ValidationError(
-                "Each ingredient must have a valid 'id'."
-            )
 
         existing_ingredients = Ingredient.objects.filter(id__in=ingredient_ids)
         if len(existing_ingredients) != len(ingredient_ids):
