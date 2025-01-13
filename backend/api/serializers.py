@@ -1,4 +1,3 @@
-from django.db import transaction
 from rest_framework import serializers
 from core.models import (Recipe, Ingredient, RecipeIngredient,
                          UserProfile, Subscription)
@@ -210,12 +209,10 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('recipe_ingredients', [])
-        instance.recipe_ingredients.all().delete()
 
-        with transaction.atomic():
-            instance.recipe_ingredients.all().delete()
-            self.create_recipe_ingredients(instance, ingredients_data)
-            return super().update(instance, validated_data)
+        instance.recipe_ingredients.all().delete()
+        self.create_recipe_ingredients(instance, ingredients_data)
+        return super().update(instance, validated_data)
 
     def create_recipe_ingredients(self, recipe, ingredients_data):
         RecipeIngredient.objects.bulk_create(
