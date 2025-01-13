@@ -11,5 +11,6 @@ def short_link_redirect(request, pk):
     if Recipe.objects.filter(id=pk).exists():
         return redirect(f'/recipes/{pk}')
     return HttpResponseNotFound(
-        'Recipe with this id not found.',
+        f'Recipe with id {pk} not found. \
+            Recipe deleted or not yet created',
     )
