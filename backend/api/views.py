@@ -108,12 +108,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             return Response({'short-link': short_link_url})
         return Response(
-            {'errors': 'Recipe with this id not found'},
+            {'errors':
+                'To creating short link with this id needed existed recipe.'},
             status=status.HTTP_404_NOT_FOUND
         )
 
     def handle_add_or_remove(self, request, pk, model, error_message):
-        """Function for adding or removing recipes"""
+        """Handle adding or removing a recipe from a specified model."""
         recipe = self.get_object()
 
         if request.method == 'POST':
