@@ -131,18 +131,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            try:
-                get_object_or_404(
-                    model,
-                    user=request.user,
-                    recipe=recipe
-                ).delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except model.DoesNotExist:
-                return Response(
-                    {'errors': f'Recipe not in {model.__name__.lower()}'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            get_object_or_404(
+                model,
+                user=request.user,
+                recipe=recipe
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'])
     def shopping_cart(self, request, pk=None):
