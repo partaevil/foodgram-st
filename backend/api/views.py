@@ -109,7 +109,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({'short-link': short_link_url})
         return Response(
             {'errors':
-                'To creating short link with this id needed existed recipe.'},
+                f'To creating short link with id {pk} needed existed recipe.'},
             status=status.HTTP_404_NOT_FOUND
         )
 
